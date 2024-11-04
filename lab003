@@ -1,0 +1,75 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import tkinter as tk
+from tkinter import messagebox
+
+def plot_signal():
+    try:
+        # Зчитування значень із полів введення
+        sampling_rate = int(entry_sampling_rate.get())
+        T = float(entry_duration.get())
+        f1 = float(entry_freq1.get())
+        f2 = float(entry_freq2.get())
+
+        # Генерація часу і сигналу
+        t = np.linspace(0.0, T, int(T * sampling_rate), endpoint=False)
+        signal = 0.5 * np.sin(2 * np.pi * f1 * t) + 0.3 * np.sin(2 * np.pi * f2 * t)
+
+        # Виконання дискретного перетворення Фур'є (DFT)
+        fft_values = np.fft.fft(signal)
+        fft_freq = np.fft.fftfreq(len(signal), 1 / sampling_rate)
+
+        # Вибір позитивних частот і відповідних амплітуд
+        positive_freqs = fft_freq[:len(fft_freq) // 2]
+        positive_amplitudes = 2.0 / len(signal) * np.abs(fft_values[:len(fft_freq) // 2])
+
+        # Побудова графіків
+        plt.figure(figsize=(12, 6))
+
+        # Сигнал у часовій області
+        plt.subplot(2, 1, 1)
+        plt.plot(t, signal)
+        plt.title("Сигнал у часовій області")
+        plt.xlabel("Час [сек]")
+        plt.ylabel("Амплітуда")
+
+        # Амплітудно-частотна характеристика (спектр)
+        plt.subplot(2, 1, 2)
+        plt.plot(positive_freqs, positive_amplitudes)
+        plt.title("Амплітудно-частотна характеристика")
+        plt.xlabel("Частота [Гц]")
+        plt.ylabel("Амплітуда")
+        plt.grid()
+
+        plt.tight_layout()
+        plt.show()
+
+    except ValueError:
+        messagebox.showerror("Помилка", "Будь ласка, введіть коректні числові значення.")
+
+# Створення вікна Tkinter
+root = tk.Tk()
+root.title("Введення параметрів сигналу")
+
+# Поля для введення параметрів
+tk.Label(root, text="Частота дискретизації (Гц):").grid(row=0, column=0, padx=5, pady=5)
+entry_sampling_rate = tk.Entry(root)
+entry_sampling_rate.grid(row=0, column=1, padx=5, pady=5)
+
+tk.Label(root, text="Тривалість сигналу (сек):").grid(row=1, column=0, padx=5, pady=5)
+entry_duration = tk.Entry(root)
+entry_duration.grid(row=1, column=1, padx=5, pady=5)
+
+tk.Label(root, text="Частота першого синусоїдального сигналу (Гц):").grid(row=2, column=0, padx=5, pady=5)
+entry_freq1 = tk.Entry(root)
+entry_freq1.grid(row=2, column=1, padx=5, pady=5)
+
+tk.Label(root, text="Частота другого синусоїдального сигналу (Гц):").grid(row=3, column=0, padx=5, pady=5)
+entry_freq2 = tk.Entry(root)
+entry_freq2.grid(row=3, column=1, padx=5, pady=5)
+
+# Кнопка для побудови графіка
+plot_button = tk.Button(root, text="Побудувати графік", command=plot_signal)
+plot_button.grid(row=4, column=0, columnspan=2, pady=10)
+
+root.mainloop()
